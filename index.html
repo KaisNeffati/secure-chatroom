@@ -1,35 +1,82 @@
 <!doctype html>
 <html>
+<!--  Mohamed GHARSALLAH & Amine MAKNI-->
   <head>
-    <title>Socket.IO chat</title>
+    <title>Secure Chat Room</title>
     <style>
       * { margin: 0; padding: 0; box-sizing: border-box; }
       body { font: 13px Helvetica, Arial; }
-      form { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
-      form input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
-      form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
+      header {padding: 5px; text-align: center; color: #fff; background: #602870}
+      header a { color: inherit; font-weight: inherit;}
+      form { background: #602870; padding: 3px; position: fixed; bottom: 0; width: 100%; }
+      #m{ border: 0; padding: 10px; width: 60%; margin-right: .8%; }
+      #k{ border: 0; padding: 10px; width: 29%; margin-right: .8%; }
+      form button { width: 9%; margin: auto; background: #3D034E; border: none; padding: 10px; color: #fff}
       #messages { list-style-type: none; margin: 0; padding: 0; }
       #messages li { padding: 5px 10px; }
       #messages li:nth-child(odd) { background: #eee; }
     </style>
   </head>
   <body>
+    <header>
+      <h3>Secure Chat Room, Using AES BFB Encryption system (256bit key)</h3>
+      <p>Built by <strong>Amine MAKNI</strong> and <strong>Mohamed GHARSALLAH</strong></p>
+      <p>Built with <a href="https://github.com/sytelus/CryptoJS">CryptoJS</a>, <a href="http://nodejs.org/">NodeJs</a> and <a href="https://socket.io">Socket.io</a></p>
+
+    </header>
     <ul id="messages"></ul>
     <form action="">
-      <input id="m" autocomplete="off" /><button>Send</button>
+      <input id="m" autocomplete="off" placeholder="Message"/><input id="k" autocomplete="off" placeholder="Encryption Key" /><button>Send</button>
     </form>
+    <!-- SocketIo -->
     <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+    <!-- jquery -->
     <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+    <!-- CryptoJs -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/aes.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/components/mode-cfb.js"></script>
+
     <script>
+      // Initialise an empty key
+      var key = "";
+
+      // Add on update listener for the key input
+      $('#k').change(function () {
+        key = $( this ).val()
+      })
+
+      // Initialise Socket
       var socket = io();
+      // Add OnSubmit handler
       $('form').submit(function(){
-        socket.emit('chat message', $('#m').val());
-        $('#m').val('');
+        var message = $('#m').val()
+        if (message) {
+          encryptedMessage = encrypt(message)
+          socket.emit('chat message', encryptedMessage);
+          $('#m').val('');
+        }
         return false;
       });
-      socket.on('chat message', function(msg){
-        $('#messages').append($('<li>').text(msg));
+      // Whernever a new message is received, add a new item
+      socket.on('chat message', function(message){
+        decryptedMessage = decrypt(message)
+        $('#messages').append($('<li>').text(decryptedMessage));
       });
+
+      // Encryption methode
+      function encrypt(message) {
+        if (key) {
+          message = CryptoJS.AES.encrypt(message, key, { mode: CryptoJS.mode.CFB }).toString();
+        }
+        return message;
+      }
+      // Decryption methode
+      function decrypt(message) {
+        if (key) {
+          message = CryptoJS.AES.decrypt(message, key, {mode: CryptoJS.mode.CFB}).toString(CryptoJS.enc.Utf8)
+        }
+        return message
+      }
     </script>
   </body>
 </html>
