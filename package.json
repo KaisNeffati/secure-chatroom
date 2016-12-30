@@ -5,5 +5,20 @@
   "dependencies": {
     "express": "4.10.2",
     "socket.io": "1.2.0"
-  }
+  },
+  "main": "index.js",
+  "devDependencies": {},
+  "scripts": {
+    "start": "PORT=80 node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rauchg/chat-example.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rauchg/chat-example/issues"
+  },
+  "homepage": "https://github.com/rauchg/chat-example#readme"
 }
